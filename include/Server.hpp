@@ -48,8 +48,5 @@
 
 			void newClient();
 			void newData();
-
-		//PARSING
-			void parsing_switch(std::string &cmd, int fd);
 	};
 #endif //FT_IRC_SERVER_H

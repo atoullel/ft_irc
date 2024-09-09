@@ -72,8 +72,3 @@ void Server::launch(int port, std::string pass)
 
 //----------------- Getters -----------------//
 //TO BE CODED
-
-//PARSING
-void Server::parsing_switch(std::string &cmd, int fd){
-
-}
