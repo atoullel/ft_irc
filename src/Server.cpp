@@ -28,9 +28,17 @@ Server &Server::operator=(Server const &src){
 	return (*this);
 }
 
-void Server::initSocket()
+void Server::signalHandler(int signum)
+{
+	(void)signum;
+	std::cout << std::endl << "Signal caught" << std::endl;
+	Server::Signal = true;
+}
+
+void Server::Init_server()
 {
 	int optval = 1;
+	struct epoll_event	serv_event;
 
 	_serv_socket = socket(AF_INET, SOCK_STREAM, 0);											//Creating socket IPv4, TCP
 	if(_serv_socket == -1)
@@ -42,34 +50,95 @@ void Server::initSocket()
 		throw(std::runtime_error("fcntl error during server socket init"));
 																							//Initialising server socket addr struct
 	_serv_addr.sin_family = AF_INET;														//Setting to IPV4
-	_serv_addr.sin_port = htons(port);														//Setting NBO to big-endian
+	_serv_addr.sin_port = htons(_port);														//Setting NBO to big-endian
 	_serv_addr.sin_addr.s_addr = INADDR_ANY;
 	if (bind(_serv_socket, (struct sockaddr *)&_serv_addr, sizeof(_serv_addr)) == -1)		//Binding server addr to socket
 		throw(std::runtime_error("bind error during server socket init"));
 	if (listen(_serv_socket, SOMAXCONN) == -1)												//Listening for incoming connections
 		throw(std::runtime_error("listen error during server socket init"));
+	
+	_epfd = epoll_create(10); //Creation of the epoll instance. The argument helps the kernel to decide the size of the epoll instance
+	if (_epfd == -1)
+		throw(std::runtime_error("epoll instance creation failure"));
+	serv_event.events = EPOLLIN;
+	serv_event.data.fd = _serv_socket;
+	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, _serv_socket, &serv_event) == -1)
+		throw(std::runtime_error("init epoll_ctl failure"));
+
+	
 }
 
-void Server::launch(int port, std::string pass)
+void Server::Launch()
 {
-	initSocket();
+	int	n_events;
+
+	Init_server();
 	std::cout << "Server is now waiting for events" << std::endl;
 
-	_num_socket = 1;
+	n_events = 0;
 	while (Server::Signal == false)
 	{
-		_num_events = epoll_wait(_epfd, _events, _num_socket, -1);
-		for (size_t i = 0; i < _num_events; i++)
+		n_events = epoll_wait(_epfd, _evlist, MAX_EVENTS, -1);
+		for (size_t i = 0; i < n_events; i++)
 		{
-			if (events[i].data.fd == _server_socket && events[i].events == EPOLLIN);
-				newClient(_server_socket, this->_rc, &num_socket, events[i]);
-			else
-				newData(...); 															// I need to rework newClient & NewDate because they weren't working
+			if (_evlist[i].data.fd == _serv_socket)
+				newClient();
+			else if (_evlist[i].events & EPOLLIN)
+				newData(_evlist[i].data.fd);
+
+			if (_evlist[i].events & (EPOLLRDHUP | EPOLLHUP)){
+				epoll_ctl(_epfd, EPOLL_CTL_DEL, _evlist[i].data.fd, NULL);
+				//add Method to remove the client object from the clients vector and somthing to remove channels
+				close(_evlist[i].data.fd);
+			}									// I need to rework newClient & NewDate because they weren't working
 		}
 	}
-	// close file descriptors
+	// Normally closing the epoll instance should close all associated FDs
+	close(_epfd);
 }
 
+void	Server::newClient(){
+	Client cl_new;
+	struct sockaddr_in cl_addr;
+	struct epoll_event	cl_event;
+	int					cl_socket;
+
+	memset(&cl_addr, 0, sizeof(cl_addr));
+	socklen_t len = sizeof(cl_addr);
+
+	int cl_socket = accept(_serv_socket, (sockaddr *)&(cl_addr), &len);
+	if (cl_socket == -1){
+		ft_error("newClient accept failure");
+		return;
+		}
+	if (fcntl(cl_socket, F_SETFL, O_NONBLOCK) == -1){
+		ft_error("newClient fcntl failure");
+		return;
+	}
+
+	cl_event.events = EPOLLIN | EPOLLRDHUP | EPOLLHUP;
+	cl_event.data.fd = cl_socket;
+	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, cl_socket, &cl_event) == -1){
+		ft_error("newClient epoll_ctl failure");
+		return;
+	}
+
+	cl_new.setFd(cl_socket);
+	cl_new.setIp(inet_ntoa((cl_addr.sin_addr)));
+	_clients.push_back(cl_new);
+	return ;
+}
+
+void	Server::newData(int	fd){
+
+	return ;
+}
+
+void	Server::ft_error(std::string reason){
+	std::string error(strerror(errno));
+	std::cerr << RED << reason << " : " << error << WHITE << std::endl;
+	return ;
+}
 //----------------- Getters -----------------//
 //TO BE CODED
 

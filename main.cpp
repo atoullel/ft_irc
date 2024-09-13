@@ -11,7 +11,7 @@ int main(int ac, char **av)
 		std::cout << "Incorrect number of arguments, specify PORT and PASSWORD" << std::endl;
 		return (-1);
 	}
-	if (!checkPort() || !*av[2]) {
+	if (!checkPort(av[1]) || !*av[2]) {
 		std::cout << "Invalid PORT or PASSWORD" << std::endl;
 		return (-1);
 	}
@@ -19,14 +19,13 @@ int main(int ac, char **av)
 	//std::cout << INTRO;
 	try
 	{
-		signal(SIGINT, Server::signal_handler); // TO BE CODED
-		signal(SIGQUIT, Server::signal_handler);
+		signal(SIGINT, Server::signalHandler);
+		signal(SIGQUIT, Server::signalHandler);
 		signal(SIGPIPE, SIG_IGN);
-		serv.launch();
+		serv.Launch();
 	}
 	catch(const std::exception& e)
 	{
-		ser.close_fds();
 		std::cerr << e.what() << std::endl;
 	}
 	return (0);
