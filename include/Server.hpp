@@ -57,6 +57,9 @@
 			~Server();
 			Server	&operator=(Server const &src);
 
+			void newClient();
+			void newData();
+
 			void		Launch();
 			void		Init_server();
 			void		newClient();

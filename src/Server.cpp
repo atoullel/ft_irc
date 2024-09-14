@@ -141,8 +141,3 @@ void	Server::ft_error(std::string reason){
 }
 //----------------- Getters -----------------//
 //TO BE CODED
-
-//PARSING
-void Server::parsing_switch(std::string &cmd, int fd){
-
-}
