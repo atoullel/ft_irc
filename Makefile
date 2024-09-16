@@ -8,7 +8,18 @@ INC =	include
 
 SRC =	main.cpp\
 		src/Server.cpp\
+		src/Auth.cpp\
 		src/Client.cpp\
+		src/Salon.cpp\
+		src/Parse.cpp\
+		cmd/INVITE.cpp\
+		cmd/JOIN.cpp\
+		cmd/KICK.cpp\
+		cmd/MODE.cpp\
+		cmd/PART.cpp\
+		cmd/PRIVMSG.cpp\
+		cmd/QUIT.cpp\
+		cmd/TOPIC.cpp\
 
 OBJ = $(SRC:.cpp=.o)
 

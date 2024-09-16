@@ -1,4 +1,5 @@
 #include "../include/Server.hpp"
+#include <sstream>
 
 bool Server::Signal = false;
 
@@ -11,7 +12,7 @@ Server::Server(Server const &src){
 	return ;
 }
 
-Server::Server(int port, std::string password) : _port(port), _password(password){
+Server::Server(int port, std::string _password) : _port(_port), _password(_password){
 	std::cout << "Server constructor" << std::endl;
 	return ;
 }
@@ -28,7 +29,7 @@ Server &Server::operator=(Server const &src){
 	return (*this);
 }
 
-void Server::signalHandler(int signum)
+void Server::SignalHandler(int signum)
 {
 	(void)signum;
 	std::cout << std::endl << "Signal caught" << std::endl;
@@ -88,7 +89,7 @@ void Server::Launch()
 
 			if (_evlist[i].events & (EPOLLRDHUP | EPOLLHUP)){
 				epoll_ctl(_epfd, EPOLL_CTL_DEL, _evlist[i].data.fd, NULL);
-				//add Method to remove the client object from the clients vector and somthing to remove channels
+				//add Method to remove the client object from the clients vector and somthing to remove Salons
 				close(_evlist[i].data.fd);
 			}									// I need to rework newClient & NewDate because they weren't working
 		}
@@ -123,8 +124,8 @@ void	Server::newClient(){
 		return;
 	}
 
-	cl_new.setFd(cl_socket);
-	cl_new.setIp(inet_ntoa((cl_addr.sin_addr)));
+	// cl_new.setFd(cl_socket);												  ICI NE PAS OUBLIER
+	// cl_new.setIp(inet_ntoa((cl_addr.sin_addr)));                           ICI NE PAS OUBLIER
 	_clients.push_back(cl_new);
 	return ;
 }
@@ -139,5 +140,106 @@ void	Server::ft_error(std::string reason){
 	std::cerr << RED << reason << " : " << error << WHITE << std::endl;
 	return ;
 }
-//----------------- Getters -----------------//
-//TO BE CODED
+
+
+//Remove
+void Server::RemoveClient(int fd){
+	for (size_t i = 0; i < this->_clients.size(); i++){
+		if (this->_clients[i].GetFd() == fd)
+			{this->_clients.erase(this->_clients.begin() + i); return;}
+	}
+}
+
+void Server::RemoveSalon(std::string name){
+	for (size_t i = 0; i < this->_salon.size(); i++){
+		if (this->_salon[i].GetName() == name)
+			{this->_salon.erase(this->_salon.begin() + i); return;}
+	}
+}
+
+void	Server::RmSalons(int fd){
+	for (size_t i = 0; i < this->_salon.size(); i++){
+		int flag = 0;
+		if (_salon[i].get_client(fd))
+			{_salon[i].remove_client(fd); flag = 1;}
+		else if (_salon[i].get_admin(fd))
+			{_salon[i].remove_admin(fd); flag = 1;}
+		if (_salon[i].GetClientsNumber() == 0)
+			{_salon.erase(_salon.begin() + i); i--; continue;}
+		if (flag){
+			std::string rpl = ":" + GetClient(fd)->GetNickName() + "!~" + GetClient(fd)->GetUserName() + "@localhost QUIT Quit\r\n";
+			_salon[i].sendTo_all(rpl);
+		}
+	}
+}
+
+//---------------//Send
+void Server::senderror(int code, std::string clientname, int fd, std::string msg)
+{
+	std::stringstream ss;
+	ss << ":localhost " << code << " " << clientname << msg;
+	std::string resp = ss.str();
+	if(send(fd, resp.c_str(), resp.size(),0) == -1)
+		std::cerr << "send() faild" << std::endl;
+}
+
+void Server::senderror(int code, std::string clientname, std::string salonname, int fd, std::string msg)
+{
+	std::stringstream ss;
+	ss << ":localhost " << code << " " << clientname << " " << salonname << msg;
+	std::string resp = ss.str();
+	if(send(fd, resp.c_str(), resp.size(),0) == -1)
+		std::cerr << "send() faild" << std::endl;
+}
+
+void Server::_sendResponse(std::string response, int fd)
+{
+	if(send(fd, response.c_str(), response.size(), 0) == -1)
+		std::cerr << "Response send() faild" << std::endl;
+}
+
+//---------------//Close and Signal
+bool Server::Signal = false;
+void Server::SignalHandler(int signum)
+{
+	(void)signum;
+	std::cout << std::endl << "Signal Received!" << std::endl;
+	Server::Signal = true;
+}
+
+
+//---------------// Parsing
+std::vector<std::string> Server::split_recivedBuffer(std::string str)
+{
+	std::vector<std::string> vec;
+	std::istringstream stm(str);
+	std::string line;
+	while(std::getline(stm, line))
+	{
+		size_t pos = line.find_first_of("\r\n");
+		if(pos != std::string::npos)
+			line = line.substr(0, pos);
+		vec.push_back(line);
+	}
+	return vec;
+}
+
+std::vector<std::string> Server::split_cmd(std::string& cmd)
+{
+	std::vector<std::string> vec;
+	std::istringstream stm(cmd);
+	std::string token;
+	while(stm >> token)
+	{
+		vec.push_back(token);
+		token.clear();
+	}
+	return vec;
+}
+
+bool Server::notregistered(int fd)
+{
+	if (!GetClient(fd) || GetClient(fd)->GetNickName().empty() || GetClient(fd)->GetUserName().empty() || GetClient(fd)->GetNickName() == "*"  || !GetClient(fd)->GetLogedIn())
+		return false;
+	return true;
+}

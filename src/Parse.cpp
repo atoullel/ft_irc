@@ -1,24 +1,23 @@
-#include "../include/Parse.hpp"
 #include "../include/Server.hpp"
-#include "../include/Commande.hpp"
 
-static const CommandHandler commandTable[] = {
-	{ "PASS", &Commande::authenticateClient },
-	{ "NICK", &Commande::setNick },
-	{ "USER", &Commande::setUser },
-	{ "QUIT", &Commande::quitClient },
-	{ "KICK", &Commande::kickClient },
-	{ "JOIN", &Commande::joinChannel },
-	{ "TOPIC", &Commande::changeTopic }, //BONUS?
-	{ "MODE", &Commande::changeMode },
-	{ "PART", &Commande::leaveChannel },
-	{ "PRIVMSG", &Commande::privateMessage },
-	{ "INVITE", &Commande::inviteClient }
+
+const CommandHandler commandTable[] = {
+	{ "PASS", &Server::client_authen },
+    { "NICK", &Server::set_nickname },
+    { "USER", &Server::set_username },
+    { "QUIT", &Server::quitClient },
+    { "KICK", &Server::kickClient },
+    { "JOIN", &Server::joinSalon },
+    { "TOPIC", &Server::changeTopic }, // BONUS?
+    { "MODE", &Server::changeMode },
+    { "PART", &Server::leaveSalon },
+    { "PRIVMSG", &Server::privateMessage },
+    { "INVITE", &Server::inviteClient }
 };
 
 static const size_t commandCount = sizeof(commandTable) / sizeof(CommandHandler);
 
-void parsing_switch(Server* server, std::string& cmd, int clientFd){
+void Server::parsing_switch(std::string& cmd, int clientFd){
     if (cmd.empty())
         return;
 
@@ -44,14 +43,14 @@ void parsing_switch(Server* server, std::string& cmd, int clientFd){
     }
 
     // Gestion de la commande non trouvée ou client non enregistré(plein de fontions encore a coder)
-    if (server->isClientRegistered(clientFd)) {
-        server->sendErrorResponse(server->getErrorUnknownCommand(server->getClientNick(clientFd), parsedCommand[0]), clientFd);
+    if (isClientRegistered(clientFd)) {
+        sendErrorResponse(getErrorUnknownCommand(getClientNick(clientFd), parsedCommand[0]), clientFd);
     } else {
-        server->sendErrorResponse(server->getErrorNotRegistered("*"), clientFd);
+        sendErrorResponse(getErrorNotRegistered("*"), clientFd);
     }
 }
 
-std::vector<std::string> splitMessage(std::string input){
+std::vector<std::string> Server::splitMessage(std::string input){
     std::vector<std::string> lines;
     std::istringstream stream(input);
     std::string line;
@@ -64,7 +63,7 @@ std::vector<std::string> splitMessage(std::string input){
     return lines;
 }
 
-std::vector<std::string> splitCommand(std::string& cmd){
+std::vector<std::string> Server::splitCommand(std::string& cmd){
     std::vector<std::string> tokens;
     std::istringstream stream(cmd);
     std::string token;
