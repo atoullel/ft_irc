@@ -2,17 +2,17 @@
 
 
 const CommandHandler commandTable[] = {
-	{ "PASS", &Server::client_authen },
+    { "PASS", &Server::client_authen },
     { "NICK", &Server::set_nickname },
     { "USER", &Server::set_username },
     { "QUIT", &Server::quitClient },
     { "KICK", &Server::kickClient },
     { "JOIN", &Server::joinSalon },
-    { "TOPIC", &Server::changeTopic }, // BONUS?
+    { "TOPIC", reinterpret_cast<void (Server::*)(Server&, std::string&, int)>(Server::changeTopic) }, // BONUS?
     { "MODE", &Server::changeMode },
     { "PART", &Server::leaveSalon },
     { "PRIVMSG", &Server::privateMessage },
-    { "INVITE", &Server::inviteClient }
+    { "INVITE", reinterpret_cast<void (Server::*)(Server&, std::string&, int)>(Server::inviteClient) }
 };
 
 static const size_t commandCount = sizeof(commandTable) / sizeof(CommandHandler);
@@ -37,16 +37,16 @@ void Server::parsing_switch(std::string& cmd, int clientFd){
     // Parcours la table des commandes et appel la fonction associée si la commande est trouvée
     for (size_t i = 0; i < commandCount; i++) {
         if (parsedCommand[0] == commandTable[i].command) {
-            (commandTable[i].handler)(server, cmd, clientFd);
+            (this->*(commandTable[i].handler))(*this, cmd, clientFd);
             return;
         }
     }
 
     // Gestion de la commande non trouvée ou client non enregistré(plein de fontions encore a coder)
-    if (isClientRegistered(clientFd)) {
-        sendErrorResponse(getErrorUnknownCommand(getClientNick(clientFd), parsedCommand[0]), clientFd);
+    if (notregistered(clientFd)) {
+        _sendResponse(ERR_CMDNOTFOUND(this->_clients[clientFd].GetNickName(), parsedCommand[0]), clientFd);
     } else {
-        sendErrorResponse(getErrorNotRegistered("*"), clientFd);
+        _sendResponse(ERR_NOTREGISTERED(this->_clients[clientFd].GetNickName()), clientFd);
     }
 }
 

@@ -103,7 +103,7 @@ void Server::NotExistCh(std::vector<std::pair<std::string, std::string> >&token,
         RPL_ENDOFNAMES(GetClient(fd)->GetNickName(),newSalon.GetName()),fd);
 }
 
-void Server::joinSalon(Server& server, std::string cmd, int fd)
+void Server::joinSalon(Server& server, std::string& cmd, int fd)
 {
 	std::vector<std::pair<std::string, std::string> > token;
 	// SplitJoin(token, cmd, fd);

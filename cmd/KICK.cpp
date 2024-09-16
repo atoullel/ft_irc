@@ -60,7 +60,7 @@ std::string Server::SplitCmdKick(std::string cmd, std::vector<std::string> &tmp,
 	return reason;
 }
 
-void	Server::kickClient(Server& server, std::string cmd, int fd)
+void	Server::kickClient(Server& server, std::string& cmd, int fd)
 {
 	//ERR_BADCHANMASK (476) // if the Salon mask is invalid
 	std::vector<std::string> tmp;

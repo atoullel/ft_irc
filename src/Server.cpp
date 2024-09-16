@@ -29,12 +29,7 @@ Server &Server::operator=(Server const &src){
 	return (*this);
 }
 
-void Server::SignalHandler(int signum)
-{
-	(void)signum;
-	std::cout << std::endl << "Signal caught" << std::endl;
-	Server::Signal = true;
-}
+
 
 void Server::Init_server()
 {

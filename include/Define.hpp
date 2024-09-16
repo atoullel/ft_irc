@@ -5,7 +5,7 @@
 #define RPL_CONNECTED(nickname) (": 001 " + nickname + " : Welcome to the IRC server!" + CRLF)
 #define RPL_UMODEIS(hostname, Salonname, mode, user)  ":" + hostname + " MODE " + Salonname + " " + mode + " " + user + CRLF
 #define RPL_CREATIONTIME(nickname, Salonname, creationtime) ": 329 " + nickname + " #" + Salonname + " " + creationtime + CRLF
-#define RPL_SalonMODES(nickname, Salonname, modes) ": 324 " + nickname + " #" + Salonname + " " + modes + CRLF
+#define RPL_SALONMODES(nickname, Salonname, modes) ": 324 " + nickname + " #" + Salonname + " " + modes + CRLF
 #define RPL_CHANGEMODE(hostname, Salonname, mode, arguments) (":" + hostname + " MODE #" + Salonname + " " + mode + " " + arguments + CRLF)
 #define RPL_NICKCHANGE(oldnickname, nickname) (":" + oldnickname + " NICK " + nickname + CRLF)
 #define RPL_JOINMSG(hostname, ipaddress, Salonname) (":" + hostname + "@" + ipaddress + " JOIN #" + Salonname + CRLF)

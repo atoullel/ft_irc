@@ -56,7 +56,7 @@ int Server::SplitCmdPart(std::string cmd, std::vector<std::string> &tmp, std::st
 	return 1;
 }
 
-void Server::leaveSalon(Server& server, std::string cmd, int fd)
+void Server::leaveSalon(Server& server, std::string& cmd, int fd)
 {
 	std::vector<std::string> tmp;
 	std::string reason;

@@ -59,7 +59,7 @@ bool Server::nickNameInUse(std::string& nickname)
 }
 
 
-void Server::set_nickname(Server& server, std::string cmd, int fd)
+void Server::set_nickname(Server& server, std::string& cmd, int fd)
 {
 	std::string inuse;
 	cmd = cmd.substr(4);
