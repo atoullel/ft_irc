@@ -48,7 +48,7 @@ std::string SplitCmdPrivmsg(std::string cmd, std::vector<std::string> &tmp)
 	else //shrink to the first space
 		{for (size_t i = 0; i < str.size(); i++){if (str[i] == ' '){str = str.substr(0, i);break;}}}
 	return  str;
-	
+
 }
 
 void	Server::CheckForSalons_Clients(std::vector<std::string> &tmp, int fd)
@@ -91,4 +91,5 @@ void	Server::privateMessage(Server& server, std::string& cmd, int fd)
 			_sendResponse(resp, GetClientNick(tmp[i])->GetFd());
 		}
 	}
+	(void)server;
 }

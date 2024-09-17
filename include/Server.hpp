@@ -1,7 +1,8 @@
-#ifndef FT_IRC_SERVER_H
-# define FT_IRC_SERVER_H
+#ifndef SERVER_HPP
+# define SERVER_HPP
 
 	#include <iostream>
+	#include <cstdlib>
 	#include <vector>
 	#include <string>
 	#include <sys/socket.h>
@@ -13,10 +14,12 @@
 	#include <fcntl.h>
 	#include <arpa/inet.h>
 	#include <sstream>
+	#include <errno.h>
 
-	#include "../include/Client.hpp"
-	#include "../include/Define.hpp"
-	#include "../include/Salon.hpp"
+
+	#include "Client.hpp"
+	#include "Define.hpp"
+	#include "Salon.hpp"
 
 	#define WHITE "\e[0;37m"
 	#define GREEN "\e[1;32m"
@@ -39,7 +42,7 @@
 	#define MAX_EVENTS 1024
 
 	class Client;
-	class Salon;
+	// class Salon;
 
 
 	class Server {
@@ -95,6 +98,7 @@ void Launch();
 void Init_server();
 void newClient();
 void ft_error(std::string reason);
+void newData(int fd);
 //SETTERS
 void SetFd(int fd){this->_serv_socket = fd;}
 void SetPort(int _port){this->_port = _port;}
@@ -113,12 +117,7 @@ void AddChannel(Salon newChannel){this->_salon.push_back(newChannel);}
 	void senderror(int code, std::string clientname, std::string salonname, int fd, std::string msg);
 	void 		_sendResponse(std::string response, int fd);
 	//---------------//Close and Signal Methods
-	static void SignalHandler(int signum)
-{
-	(void)signum;
-	std::cout << std::endl << "Signal caught" << std::endl;
-	Signal = true;
-};
+	static void SignalHandler(int signum);
 	//---------------//Parsing Methods
 	std::vector<std::string> split_recivedBuffer(std::string str);
 	std::vector<std::string> split_cmd(std::string &str);
@@ -158,8 +157,8 @@ void AddChannel(Salon newChannel){this->_salon.push_back(newChannel);}
 	void getCmdArgs(std::string cmd,std::string& name, std::string& modeset ,std::string &params);
 	//---------------------------//TOPIC CMD
 	std::string tTopic();
-	void changeTopic(Server& server, std::string &cmd, int &fd);
-	void inviteClient(Server& server, std::string &cmd, int &fd);
+	void changeTopic(Server& server, std::string &cmd, int fd);
+	void inviteClient(Server& server, std::string &cmd, int fd);
 	std::string gettopic(std::string& input);
 	int getpos(std::string &cmd);
 	std::vector<std::string> splitMessage(std::string input);

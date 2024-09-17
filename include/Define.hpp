@@ -1,4 +1,4 @@
-#define once
+#pragma once
 
 #define CRLF "\r\n"
 

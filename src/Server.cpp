@@ -12,7 +12,7 @@ Server::Server(Server const &src){
 	return ;
 }
 
-Server::Server(int port, std::string _password) : _port(_port), _password(_password){
+Server::Server(int _port, std::string _password) : _port(_port), _password(_password){
 	std::cout << "Server constructor" << std::endl;
 	return ;
 }
@@ -52,7 +52,7 @@ void Server::Init_server()
 		throw(std::runtime_error("bind error during server socket init"));
 	if (listen(_serv_socket, SOMAXCONN) == -1)												//Listening for incoming connections
 		throw(std::runtime_error("listen error during server socket init"));
-	
+
 	_epfd = epoll_create(10); //Creation of the epoll instance. The argument helps the kernel to decide the size of the epoll instance
 	if (_epfd == -1)
 		throw(std::runtime_error("epoll instance creation failure"));
@@ -61,7 +61,7 @@ void Server::Init_server()
 	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, _serv_socket, &serv_event) == -1)
 		throw(std::runtime_error("init epoll_ctl failure"));
 
-	
+
 }
 
 void Server::Launch()
@@ -75,18 +75,17 @@ void Server::Launch()
 	while (Server::Signal == false)
 	{
 		n_events = epoll_wait(_epfd, _evlist, MAX_EVENTS, -1);
-		for (size_t i = 0; i < n_events; i++)
+		for (int i = 0; i < n_events; i++)
 		{
 			if (_evlist[i].data.fd == _serv_socket)
 				newClient();
 			else if (_evlist[i].events & EPOLLIN)
 				newData(_evlist[i].data.fd);
-
-			if (_evlist[i].events & (EPOLLRDHUP | EPOLLHUP)){
-				epoll_ctl(_epfd, EPOLL_CTL_DEL, _evlist[i].data.fd, NULL);
-				//add Method to remove the client object from the clients vector and somthing to remove Salons
-				close(_evlist[i].data.fd);
-			}									// I need to rework newClient & NewDate because they weren't working
+			// if (_evlist[i].events & (EPOLLRDHUP | EPOLLHUP)){
+			// 	epoll_ctl(_epfd, EPOLL_CTL_DEL, _evlist[i].data.fd, NULL);
+			// 	//add Method to remove the client object from the clients vector and somthing to remove Salons
+			// 	close(_evlist[i].data.fd);
+			// }									// I need to rework newClient & NewDate because they weren't working
 		}
 	}
 	// Normally closing the epoll instance should close all associated FDs
@@ -102,7 +101,7 @@ void	Server::newClient(){
 	memset(&cl_addr, 0, sizeof(cl_addr));
 	socklen_t len = sizeof(cl_addr);
 
-	int cl_socket = accept(_serv_socket, (sockaddr *)&(cl_addr), &len);
+	cl_socket = accept(_serv_socket, (sockaddr *)&(cl_addr), &len);
 	if (cl_socket == -1){
 		ft_error("newClient accept failure");
 		return;
@@ -119,15 +118,34 @@ void	Server::newClient(){
 		return;
 	}
 
-	// cl_new.setFd(cl_socket);												  ICI NE PAS OUBLIER
+	cl_new.SetFd(cl_socket);												  //ICI NE PAS OUBLIER
 	// cl_new.setIp(inet_ntoa((cl_addr.sin_addr)));                           ICI NE PAS OUBLIER
 	_clients.push_back(cl_new);
 	return ;
 }
 
 void	Server::newData(int	fd){
+	char buff[1024];
+	memset(buff, 0, sizeof(buff));
+	Client *client = GetClient(fd);
+	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1 , 0);
+	if(bytes <= 0){
 
-	return ;
+		std::cout << "Client has Disconnected: " << fd << std::endl;
+		RemoveClient(fd);
+		epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, NULL);
+		close(fd);
+	}
+	else
+	{
+		client->setBuffer(buff);
+		if(client->getBuffer().find_first_of("\r\n") == std::string::npos)
+			return;
+		std::string cmd = client->getBuffer();
+		parsing_switch(cmd, fd);
+		// ADD parsing / execution methods=======================================================================
+		client->clearBuffer();
+	}
 }
 
 void	Server::ft_error(std::string reason){
@@ -138,11 +156,12 @@ void	Server::ft_error(std::string reason){
 
 
 //Remove
-void Server::RemoveClient(int fd){
-	for (size_t i = 0; i < this->_clients.size(); i++){
-		if (this->_clients[i].GetFd() == fd)
-			{this->_clients.erase(this->_clients.begin() + i); return;}
+void	Server::RemoveClient(int fd){
+	for (std::vector<Client>::iterator i = _clients.begin(); i < _clients.end(); i++){
+		if (i->GetFd() == fd)
+			_clients.erase(i);
 	}
+	return ;
 }
 
 void Server::RemoveSalon(std::string name){
@@ -194,9 +213,9 @@ void Server::_sendResponse(std::string response, int fd)
 }
 
 //---------------//Close and Signal
-bool Server::Signal = false;
 void Server::SignalHandler(int signum)
 {
+	Server::Signal = false;
 	(void)signum;
 	std::cout << std::endl << "Signal Received!" << std::endl;
 	Server::Signal = true;

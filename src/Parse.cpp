@@ -1,4 +1,4 @@
-#include "../include/Server.hpp"
+#include "Server.hpp"
 
 
 const CommandHandler commandTable[] = {
@@ -8,22 +8,26 @@ const CommandHandler commandTable[] = {
     { "QUIT", &Server::quitClient },
     { "KICK", &Server::kickClient },
     { "JOIN", &Server::joinSalon },
-    { "TOPIC", reinterpret_cast<void (Server::*)(Server&, std::string&, int)>(Server::changeTopic) }, // BONUS?
+    { "TOPIC", &Server::changeTopic }, // BONUS?
     { "MODE", &Server::changeMode },
     { "PART", &Server::leaveSalon },
     { "PRIVMSG", &Server::privateMessage },
-    { "INVITE", reinterpret_cast<void (Server::*)(Server&, std::string&, int)>(Server::inviteClient) }
+    { "INVITE", &Server::inviteClient }
+
 };
 
-static const size_t commandCount = sizeof(commandTable) / sizeof(CommandHandler);
+static const size_t commandCount = sizeof(commandTable) / sizeof(commandTable[0]);
 
 void Server::parsing_switch(std::string& cmd, int clientFd){
     if (cmd.empty())
         return;
+    std::cout << cmd << std::endl;
 
     std::vector<std::string> parsedCommand = splitCommand(cmd);
     if (parsedCommand.empty())
         return;
+    std::cout << parsedCommand.front() << std::endl;
+    std::cout << parsedCommand.back() << std::endl;
 
     // Supprime les espaces en début de chaîne
     size_t found = cmd.find_first_not_of(" \t\v");

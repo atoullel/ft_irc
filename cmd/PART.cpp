@@ -86,4 +86,5 @@ void Server::leaveSalon(Server& server, std::string& cmd, int fd)
 		if (!flag) // ERR_NOSUCHSalon (403) // if the Salon doesn't exist
 			senderror(403, GetClient(fd)->GetNickName(), "#" + tmp[i], GetClient(fd)->GetFd(), " :No such Salon\r\n");
 	}
+	(void)server;
 }

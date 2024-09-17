@@ -1,6 +1,6 @@
 #include "../include/Server.hpp"
 
-/* 
+/*
 *   PASS COMMAND
 */
 
@@ -15,7 +15,7 @@ void Server::client_authen(Server& server, std::string& cmd, int fd)
 		if(cmd[0] == ':')
 			cmd.erase(cmd.begin());
 	}
-	if(pos == std::string::npos || cmd.empty()) 
+	if(pos == std::string::npos || cmd.empty())
 		_sendResponse(ERR_NOTENOUGHPARAM(std::string("*")), fd);
 	else if(!cli->getRegistered())
 	{
@@ -27,19 +27,19 @@ void Server::client_authen(Server& server, std::string& cmd, int fd)
 	}
 	else
         _sendResponse(ERR_ALREADYREGISTERED(GetClient(fd)->GetNickName()), fd);
+	(void)server;
 }
 
 
-/* 
+/*
 *    NICK COMMAND
 */
 
 bool Server::is_validNickname(std::string& nickname)
 {
-		
 	if(!nickname.empty() && (nickname[0] == '&' || nickname[0] == '#' || nickname[0] == ':'))
 		return false;
-	for(size_t i = 1; i < nickname.size(); i++)
+	for(size_t i = 0; i < (nickname.size() - 2); i++)
 	{
 		if(!std::isalnum(nickname[i]) && nickname[i] != '_')
 			return false;
@@ -77,17 +77,21 @@ void Server::set_nickname(Server& server, std::string& cmd, int fd)
 		inuse = "*";
 		if(cli->GetNickName().empty())
 			cli->SetNickname(inuse);
-	    _sendResponse(ERR_NICKINUSE(std::string(cmd)), fd); 
+	    _sendResponse(ERR_NICKINUSE(std::string(cmd)), fd);
 		return;
 	}
+	if (!cli->getRegistered())
+		cli->setRegistered(true);
 	if(!is_validNickname(cmd)) {
 		_sendResponse(ERR_ERRONEUSNICK(std::string(cmd)), fd);
 		return;
 	}
 	else
 	{
-		if(cli && cli->getRegistered())
+		 if(cli && cli->getRegistered())
 		{
+
+			std::cout << cli->GetNickName() << std::endl;
 			std::string oldnick = cli->GetNickName();
 			cli->SetNickname(cmd);
 			if(!oldnick.empty() && oldnick != cmd)
@@ -102,7 +106,7 @@ void Server::set_nickname(Server& server, std::string& cmd, int fd)
 					_sendResponse(RPL_NICKCHANGE(oldnick,cmd), fd);
 				return;
 			}
-			
+
 		}
 		else if (cli && !cli->getRegistered())
 			_sendResponse(ERR_NOTREGISTERED(cmd), fd);
@@ -112,9 +116,10 @@ void Server::set_nickname(Server& server, std::string& cmd, int fd)
 		cli->setLogedin(true);
 		_sendResponse(RPL_CONNECTED(cli->GetNickName()), fd);
 	}
+	(void)server;
 }
 
-/* 
+/*
     USER COMMAND
 */
 
@@ -122,7 +127,7 @@ void	Server::set_username(Server& server, std::string& cmd, int fd)
 {
 	std::vector<std::string> splited_cmd = split_cmd(cmd);
 
-	Client *cli = GetClient(fd); 
+	Client *cli = GetClient(fd);
 	if((cli && splited_cmd.size() < 5))
 		{_sendResponse(ERR_NOTENOUGHPARAM(cli->GetNickName()), fd); return; }
 	if(!cli  || !cli->getRegistered())
@@ -136,4 +141,5 @@ void	Server::set_username(Server& server, std::string& cmd, int fd)
 		cli->setLogedin(true);
 		_sendResponse(RPL_CONNECTED(cli->GetNickName()), fd);
 	}
+	(void)server;
 }

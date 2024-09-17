@@ -12,7 +12,7 @@ Client::Client()
 	this->_logedin = false;
 }
 
-Client::Client(std::string _nickname, std::string _username, int _fd) : _fd(_fd), _nickname(_nickname), _username(_username){}
+Client::Client(std::string _nickname, std::string _username, int _fd): _fd(_fd), _username(_username), _nickname(_nickname) {}
 Client::~Client(){}
 Client::Client(Client const &src){*this = src;}
 Client &Client::operator=(Client const &src){
@@ -68,4 +68,9 @@ void Client::RmSalonInvite(std::string &chname){
 		if (this->ChannelsInvite[i] == chname)
 			{this->ChannelsInvite.erase(this->ChannelsInvite.begin() + i); return;}
 	}
+}
+
+void	Client::SetIp(std::string ip){
+	this->_ipaddr = ip;
+	return ;
 }

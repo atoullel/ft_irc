@@ -122,4 +122,5 @@ void Server::joinSalon(Server& server, std::string& cmd, int fd)
 		if (!flag)
 			NotExistCh(token, i, fd);
 	}
+	(void)server;
 }

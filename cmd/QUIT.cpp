@@ -68,4 +68,5 @@ void Server::quitClient(Server& server, std::string& cmd, int fd)
 	RmSalons(fd);
 	RemoveClient(fd);
 	close(fd);
+	(void)server;
 }

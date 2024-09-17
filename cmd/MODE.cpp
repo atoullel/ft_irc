@@ -62,7 +62,7 @@ void Server::changeMode(Server& server, std::string& cmd, int clientFd)
 		cmd = cmd.substr(found);
 	else
 	{
-		_sendResponse(ERR_NOTENOUGHPARAM(cli->GetNickName()), clientFd); 
+		_sendResponse(ERR_NOTENOUGHPARAM(cli->GetNickName()), clientFd);
 		return ;
 	}
 	getCmdArgs(cmd ,SalonName, modeset ,params);
@@ -78,7 +78,7 @@ void Server::changeMode(Server& server, std::string& cmd, int clientFd)
 	}
 	else if (modeset.empty()) // response with the Salon modes (MODE #Salon)
 	{
-		_sendResponse(RPL_SalonMODES(cli->GetNickName(), Salon->GetName(), Salon->getModes()) + \
+		_sendResponse(RPL_SALONMODES(cli->GetNickName(), Salon->GetName(), Salon->getModes()) + \
 		RPL_CREATIONTIME(cli->GetNickName(), Salon->GetName(),Salon->get_creationtime()),clientFd);
 		return ;
 	}
@@ -115,6 +115,7 @@ void Server::changeMode(Server& server, std::string& cmd, int clientFd)
 	if(chain.empty())
 		return ;
  	Salon->sendTo_all(RPL_CHANGEMODE(cli->getHostname(), Salon->GetName(), mode_chain.str(), arguments));
+	(void)server;
 }
 
 std::string Server::invite_only(Salon *Salon, char opera, std::string chain)
@@ -151,7 +152,7 @@ std::string Server::topic_restriction(Salon *Salon ,char opera, std::string chai
 		Salon->setModeAtindex(1, false);
 		Salon->set_topicRestriction(false);
 		param =  mode_toAppend(chain, opera, 't');
-	}	
+	}
 	return param;
 }
 
@@ -197,7 +198,7 @@ std::string Server::password_mode(std::vector<std::string> tokens, Salon *Salon,
 	else if (opera == '-' && Salon->getModeAtindex(2))
 	{
 		if(pass == Salon->GetPassword())
-		{		
+		{
 			Salon->setModeAtindex(2, false);
 			Salon->SetPassword("");
 			param = mode_toAppend(chain,opera, 'k');

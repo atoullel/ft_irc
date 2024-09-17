@@ -1,7 +1,9 @@
-#ifndef FT_IRC_CLIENT_H
-# define FT_IRC_CLIENT_H
+#ifndef CLIENT_HPP
+# define CLIENT_HPP
 
-	#include "Server.hpp"
+// #include "Server.hpp"
+#include <string>
+#include <vector>
 
 class Salon;
 class Server;
