@@ -33,3 +33,20 @@ void	Client::setIp(std::string ip){
 	this->_ipaddr = ip;
 	return ;
 }
+
+int			Client::getFd(){
+	return (this->_fd);
+}
+
+std::string	Client::setBuff(std::string src){
+	_buffer += src;
+	return ;
+}
+
+std::string	Client::getBuff(){
+	return (_buffer);
+}
+
+void		Client::clearBuff(){
+	_buffer.clear();
+}

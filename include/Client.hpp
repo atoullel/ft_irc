@@ -2,6 +2,7 @@
 # define FT_IRC_CLIENT_H
 
 	#include "Server.hpp"
+	#include <string>
 
 	class Client {
 		private:
@@ -9,6 +10,7 @@
 			std::string _ipaddr;
 			std::string	_username;
 			std::string	_nickname;
+			std::string _buffer;
 			bool 		_operator;
 			bool 		_registered;
 
@@ -21,6 +23,10 @@
 
 			void	setFd(int fd);
 			void	setIp(std::string ip);
+			std::string	setBuff(std::string src);
+			std::string	getBuff();
+			void		clearBuff();
+			int			getFd();
 };
 
 #endif //FT_IRC_CLIENT_H

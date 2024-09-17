@@ -12,6 +12,7 @@
 	#include <csignal>
 	#include <fcntl.h>
 	#include <arpa/inet.h>
+	#include <algorithm>
 
 	#include "../include/Client.hpp"
 
@@ -66,6 +67,8 @@
 			void		newData(int fd);
 			void		ft_error(std::string reason);
 			static void	signalHandler(int signum);
+			Client		*getClient(int fd);
+			void		removeClient(int fd);
 
 		//PARSING
 			void parsing_switch(std::string &cmd, int fd);

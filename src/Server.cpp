@@ -83,14 +83,12 @@ void Server::Launch()
 		{
 			if (_evlist[i].data.fd == _serv_socket)
 				newClient();
-			else if (_evlist[i].events & EPOLLIN)
+			else									//else if (_evlist[i].events & EPOLLIN)
 				newData(_evlist[i].data.fd);
-
-			if (_evlist[i].events & (EPOLLRDHUP | EPOLLHUP)){
-				epoll_ctl(_epfd, EPOLL_CTL_DEL, _evlist[i].data.fd, NULL);
+			//if (_evlist[i].events & (EPOLLRDHUP | EPOLLHUP)){
+				//epoll_ctl(_epfd, EPOLL_CTL_DEL, _evlist[i].data.fd, NULL);
 				//add Method to remove the client object from the clients vector and somthing to remove channels
-				close(_evlist[i].data.fd);
-			}									// I need to rework newClient & NewDate because they weren't working
+				//close(_evlist[i].data.fd);
 		}
 	}
 	// Normally closing the epoll instance should close all associated FDs
@@ -130,8 +128,24 @@ void	Server::newClient(){
 }
 
 void	Server::newData(int	fd){
-
-	return ;
+	char buff[1024];
+	memset(buff, 0, sizeof(buff));
+	Client *client = getClient(fd);
+	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1 , 0);
+	if(bytes <= 0){
+		std::cout << "Client has Disconnected: " << fd << std::endl;
+		removeClient(fd);
+		epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, NULL);
+		close(fd);
+	}
+	else
+	{ 
+		client->setBuff(buff);
+		if(client->getBuff().find_first_of("\r\n") == std::string::npos)
+			return;
+		// ADD parsing / execution methods=======================================================================
+		client->clearBuff();
+	}
 }
 
 void	Server::ft_error(std::string reason){
@@ -139,5 +153,21 @@ void	Server::ft_error(std::string reason){
 	std::cerr << RED << reason << " : " << error << WHITE << std::endl;
 	return ;
 }
+void		removeClient(int fd);
+
+void	Server::removeClient(int fd){
+	for (std::vector<Client>::iterator i = _clients.begin(); i < _clients.end(); i++){
+		if (i->getFd() == fd)
+			_clients.erase(i);
+	}
+	return ;
+}
 //----------------- Getters -----------------//
 //TO BE CODED
+Client	*Server::getClient(int fd){
+	for (size_t i = 0; i < this->_clients.size(); i++){
+		if (this->_clients[i].getFd() == fd)
+			return &this->_clients[i];
+	}
+	return NULL;
+}
