@@ -1,57 +1,44 @@
 #include "Server.hpp"
 
-
-const CommandHandler commandTable[] = {
-    { "PASS", &Server::client_authen },
-    { "NICK", &Server::set_nickname },
-    { "USER", &Server::set_username },
-    { "QUIT", &Server::quitClient },
-    { "KICK", &Server::kickClient },
-    { "JOIN", &Server::joinSalon },
-    { "TOPIC", &Server::changeTopic }, // BONUS?
-    { "MODE", &Server::changeMode },
-    { "PART", &Server::leaveSalon },
-    { "PRIVMSG", &Server::privateMessage },
-    { "INVITE", &Server::inviteClient }
-
-};
-
-static const size_t commandCount = sizeof(commandTable) / sizeof(commandTable[0]);
-
-void Server::parsing_switch(std::string& cmd, int clientFd){
-    if (cmd.empty())
-        return;
-    std::cout << cmd << std::endl;
-
-    std::vector<std::string> parsedCommand = splitCommand(cmd);
-    if (parsedCommand.empty())
-        return;
-    std::cout << parsedCommand.front() << std::endl;
-    std::cout << parsedCommand.back() << std::endl;
-
-    // Supprime les espaces en début de chaîne
-    size_t found = cmd.find_first_not_of(" \t\v");
-    if (found != std::string::npos)
-        cmd = cmd.substr(found);
-
-    // Ignore la commande "PING"
-    if (parsedCommand[0] == "PING" || parsedCommand[0] == "ping")
-        return;
-
-    // Parcours la table des commandes et appel la fonction associée si la commande est trouvée
-    for (size_t i = 0; i < commandCount; i++) {
-        if (parsedCommand[0] == commandTable[i].command) {
-            (this->*(commandTable[i].handler))(*this, cmd, clientFd);
-            return;
-        }
-    }
-
-    // Gestion de la commande non trouvée ou client non enregistré(plein de fontions encore a coder)
-    if (notregistered(clientFd)) {
-        _sendResponse(ERR_CMDNOTFOUND(this->_clients[clientFd].GetNickName(), parsedCommand[0]), clientFd);
-    } else {
-        _sendResponse(ERR_NOTREGISTERED(this->_clients[clientFd].GetNickName()), clientFd);
-    }
+void Server::parsing_switch(std::string &cmd, int fd)
+{
+	if(cmd.empty())
+		return ;
+	std::vector<std::string> splited_cmd = split_cmd(cmd);
+	size_t found = cmd.find_first_not_of(" \t\v");
+	if(found != std::string::npos)
+		cmd = cmd.substr(found);
+	if(splited_cmd.size() && (splited_cmd[0] == "BONG" || splited_cmd[0] == "bong"))
+		return;
+    if(splited_cmd.size() && (splited_cmd[0] == "PASS" || splited_cmd[0] == "pass"))
+        client_authen(cmd, fd);
+	else if (splited_cmd.size() && (splited_cmd[0] == "NICK" || splited_cmd[0] == "nick"))
+		set_nickname(cmd,fd);
+	else if(splited_cmd.size() && (splited_cmd[0] == "USER" || splited_cmd[0] == "user"))
+		set_username(cmd, fd);
+	else if (splited_cmd.size() && (splited_cmd[0] == "QUIT" || splited_cmd[0] == "quit"))
+		quitClient(cmd,fd);
+	else if(notregistered(fd))
+	{
+		if (splited_cmd.size() && (splited_cmd[0] == "KICK" || splited_cmd[0] == "kick"))
+			kickClient(cmd, fd);
+		else if (splited_cmd.size() && (splited_cmd[0] == "JOIN" || splited_cmd[0] == "join"))
+			joinSalon(cmd, fd);
+		else if (splited_cmd.size() && (splited_cmd[0] == "TOPIC" || splited_cmd[0] == "topic"))
+			changeTopic(cmd, fd);
+		else if (splited_cmd.size() && (splited_cmd[0] == "MODE" || splited_cmd[0] == "mode"))
+			changeMode(cmd, fd);
+		else if (splited_cmd.size() && (splited_cmd[0] == "PART" || splited_cmd[0] == "part"))
+			leaveSalon(cmd, fd);
+		else if (splited_cmd.size() && (splited_cmd[0] == "PRIVMSG" || splited_cmd[0] == "privmsg"))
+			privateMessage(cmd, fd);
+		else if (splited_cmd.size() && (splited_cmd[0] == "INVITE" || splited_cmd[0] == "invite"))
+			inviteClient(cmd,fd);
+		else if (splited_cmd.size())
+			_sendResponse(ERR_CMDNOTFOUND(GetClient(fd)->GetNickName(),splited_cmd[0]),fd);
+	}
+	else if (!notregistered(fd))
+		_sendResponse(ERR_NOTREGISTERED(std::string("*")),fd);
 }
 
 std::vector<std::string> Server::splitMessage(std::string input){

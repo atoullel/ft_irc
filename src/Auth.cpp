@@ -1,10 +1,6 @@
 #include "../include/Server.hpp"
 
-/*
-*   PASS COMMAND
-*/
-
-void Server::client_authen(Server& server, std::string& cmd, int fd)
+void Server::client_authen(std::string cmd, int fd)
 {
 	Client *cli = GetClient(fd);
 	cmd = cmd.substr(4);
@@ -27,13 +23,8 @@ void Server::client_authen(Server& server, std::string& cmd, int fd)
 	}
 	else
         _sendResponse(ERR_ALREADYREGISTERED(GetClient(fd)->GetNickName()), fd);
-	(void)server;
 }
 
-
-/*
-*    NICK COMMAND
-*/
 
 bool Server::is_validNickname(std::string& nickname)
 {
@@ -59,7 +50,7 @@ bool Server::nickNameInUse(std::string& nickname)
 }
 
 
-void Server::set_nickname(Server& server, std::string& cmd, int fd)
+void Server::set_nickname(std::string cmd, int fd)
 {
 	std::string inuse;
 	cmd = cmd.substr(4);
@@ -116,14 +107,9 @@ void Server::set_nickname(Server& server, std::string& cmd, int fd)
 		cli->setLogedin(true);
 		_sendResponse(RPL_CONNECTED(cli->GetNickName()), fd);
 	}
-	(void)server;
 }
 
-/*
-    USER COMMAND
-*/
-
-void	Server::set_username(Server& server, std::string& cmd, int fd)
+void	Server::set_username(std::string cmd, int fd)
 {
 	std::vector<std::string> splited_cmd = split_cmd(cmd);
 
@@ -141,5 +127,4 @@ void	Server::set_username(Server& server, std::string& cmd, int fd)
 		cli->setLogedin(true);
 		_sendResponse(RPL_CONNECTED(cli->GetNickName()), fd);
 	}
-	(void)server;
 }

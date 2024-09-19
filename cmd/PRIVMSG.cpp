@@ -69,7 +69,7 @@ void	Server::CheckForSalons_Clients(std::vector<std::string> &tmp, int fd)
 	}
 }
 
-void	Server::privateMessage(Server& server, std::string& cmd, int fd)
+void	Server::privateMessage(std::string cmd, int fd)
 {
 	std::vector<std::string> tmp;
 	std::string message = SplitCmdPrivmsg(cmd, tmp);
@@ -91,5 +91,4 @@ void	Server::privateMessage(Server& server, std::string& cmd, int fd)
 			_sendResponse(resp, GetClientNick(tmp[i])->GetFd());
 		}
 	}
-	(void)server;
 }

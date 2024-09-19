@@ -44,7 +44,7 @@ std::vector<std::string> Server::splitParams(std::string params)
 	return tokens;
 }
 
-void Server::changeMode(Server& server, std::string& cmd, int clientFd)
+void Server::changeMode(std::string cmd, int clientFd)
 {
 	std::string SalonName;
 	std::string params;
@@ -115,7 +115,6 @@ void Server::changeMode(Server& server, std::string& cmd, int clientFd)
 	if(chain.empty())
 		return ;
  	Salon->sendTo_all(RPL_CHANGEMODE(cli->getHostname(), Salon->GetName(), mode_chain.str(), arguments));
-	(void)server;
 }
 
 std::string Server::invite_only(Salon *Salon, char opera, std::string chain)

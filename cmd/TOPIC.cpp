@@ -34,7 +34,7 @@ int Server::getpos(std::string &cmd)
 	return -1;
 }
 
-void Server::changeTopic(Server& server, std::string &cmd, int fd)
+void Server::changeTopic(std::string cmd, int fd)
 {
 	if (cmd == "TOPIC :")
 		{senderror(461, GetClient(fd)->GetNickName(), fd, " :Not enough parameters\r\n");return;} // ERR_NEEDMOREPARAMS (461) if there are not enough parameters
@@ -125,6 +125,5 @@ void Server::changeTopic(Server& server, std::string &cmd, int fd)
 			GetSalon(nmch)->sendTo_all(rpl);
 		}
 	}
-	(void)server;
 }
 

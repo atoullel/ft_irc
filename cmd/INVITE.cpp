@@ -6,7 +6,7 @@ ERR_NOSUCHSalon (403)
 ERR_NOTONSalon (442)
 ERR_CHANOPRIVSNEEDED (482)
 ERR_USERONSalon (443)*/
-void Server::inviteClient(Server& server, std::string& cmd, int clientFd)
+void Server::inviteClient(std::string cmd, int clientFd)
 {
 	std::vector<std::string> scmd = split_cmd(cmd);
 	if(scmd.size() < 3)// ERR_NEEDMOREPARAMS (461) if there are not enough parameters
@@ -31,5 +31,4 @@ void Server::inviteClient(Server& server, std::string& cmd, int clientFd)
 	_sendResponse(rep1, clientFd);
 	std::string rep2 = ":"+ clt->getHostname() + " INVITE " + clt->GetNickName() + " " + scmd[2]+"\r\n";
 	_sendResponse(rep2, clt->GetFd());
-	(void)server;
 }

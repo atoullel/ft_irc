@@ -39,7 +39,7 @@ std::string	SplitQuit(std::string cmd)
 	return reason;
 }
 
-void Server::quitClient(Server& server, std::string& cmd, int fd)
+void Server::quitClient(std::string cmd, int fd)
 {
 	std::string reason;
 	reason = SplitQuit(cmd);
@@ -68,5 +68,4 @@ void Server::quitClient(Server& server, std::string& cmd, int fd)
 	RmSalons(fd);
 	RemoveClient(fd);
 	close(fd);
-	(void)server;
 }

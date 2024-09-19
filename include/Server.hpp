@@ -106,8 +106,8 @@ void SetPassword(std::string _password){this->_password = _password;}
 std::string GetPassword(){return this->_password;}
 void AddClient(Client newClient){this->_clients.push_back(newClient);}
 void AddChannel(Salon newChannel){this->_salon.push_back(newChannel);}
-	void set_username(Server& server, std::string& username, int fd);
-	void set_nickname(Server& server, std::string& cmd, int fd);
+	void set_username(std::string username, int fd);
+	void set_nickname(std::string cmd, int fd);
 	//---------------//Remove Methods
 	void RemoveClient(int fd);
 	void RemoveSalon(std::string name);
@@ -126,26 +126,26 @@ void AddChannel(Salon newChannel){this->_salon.push_back(newChannel);}
 	bool notregistered(int fd);
 	bool nickNameInUse(std::string& nickname);
 	bool is_validNickname(std::string& nickname);
-	void client_authen(Server& server, std::string& cmd, int fd);
+	void client_authen(std::string cmd, int fd);
 	//---------------------------//JOIN CMD
-	void	joinSalon(Server& server, std::string& cmd, int fd);
+	void	joinSalon(std::string cmd, int fd);
 	int		SplitJoin(std::vector<std::pair<std::string, std::string> > &token, std::string cmd, int fd);
 	void	ExistCh(std::vector<std::pair<std::string, std::string> >&token, int i, int j, int fd);
 	void	NotExistCh(std::vector<std::pair<std::string, std::string> >&token, int i, int fd);
 	int		SearchForClients(std::string nickname);
 	//---------------------------//PART CMD
-	void	leaveSalon(Server& server, std::string& cmd, int fd);
+	void	leaveSalon(std::string cmd, int fd);
 	int		SplitCmdPart(std::string cmd, std::vector<std::string> &tmp, std::string &reason, int fd);
 	//---------------------------//CKIK CMD
-	void	kickClient(Server& server, std::string& cmd, int fd);
+	void	kickClient(std::string cmd, int fd);
 	std::string SplitCmdKick(std::string cmd, std::vector<std::string> &tmp, std::string &user, int fd);
 	//---------------------------//PRIVMSG CMD
-	void	privateMessage(Server& server, std::string& cmd, int fd);
+	void	privateMessage(std::string cmd, int fd);
 	void	CheckForSalons_Clients(std::vector<std::string> &tmp, int fd);
 	//---------------------------//QUITE CMD
-	void	quitClient(Server& server, std::string& cmd, int fd);
+	void	quitClient(std::string cmd, int fd);
 	//---------------------------//MODE CMD
-	void 		changeMode(Server& server, std::string& cmd, int fd);
+	void 		changeMode(std::string cmd, int fd);
 	std::string invite_only(Salon *Salon, char opera, std::string chain);
 	std::string topic_restriction(Salon *Salon ,char opera, std::string chain);
 	std::string password_mode(std::vector<std::string> splited, Salon *Salon, size_t &pos, char opera, int fd, std::string chain, std::string& arguments);
@@ -157,18 +157,12 @@ void AddChannel(Salon newChannel){this->_salon.push_back(newChannel);}
 	void getCmdArgs(std::string cmd,std::string& name, std::string& modeset ,std::string &params);
 	//---------------------------//TOPIC CMD
 	std::string tTopic();
-	void changeTopic(Server& server, std::string &cmd, int fd);
-	void inviteClient(Server& server, std::string &cmd, int fd);
+	void changeTopic(std::string cmd, int fd);
+	void inviteClient(std::string cmd, int fd);
 	std::string gettopic(std::string& input);
 	int getpos(std::string &cmd);
 	std::vector<std::string> splitMessage(std::string input);
 	std::vector<std::string> splitCommand(std::string& cmd);
 	};
 
-struct CommandHandler {
-    std::string command;
-    void (Server::*handler)(Server&, std::string&, int);
-
-	static const CommandHandler commandTable[];
-};
 #endif //FT_IRC_SERVER_H
