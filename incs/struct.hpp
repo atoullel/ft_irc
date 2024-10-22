@@ -8,9 +8,9 @@
 # define USERLEN 18
 # define CHANNELLEN 20
 
-# ifndef IP
-#  define IP "127.0.0.1"
-# endif
+// # ifndef IP
+# define IP "127.0.0.1"
+// # endif
 
 typedef struct sockaddr_in	s_sockaddr_in;
 typedef struct sockaddr 	s_sockaddr;
